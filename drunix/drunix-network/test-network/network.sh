@@ -494,7 +494,7 @@ function networkDown() {
 
 
   if [ "${CONTAINER_CLI}" == "docker" ]; then
-    DOCKER_SOCK=$DOCKER_SOCK ${CONTAINER_CLI_COMPOSE} ${COMPOSE_FILES} down --volumes --remove-orphans
+    DOCKER_SOCK=$DOCKER_SOCK CCAAS_BUILDER_DIR="${CCAAS_BUILDER_DIR}" ${CONTAINER_CLI_COMPOSE} ${COMPOSE_FILES} down --volumes --remove-orphans
   elif [ "${CONTAINER_CLI}" == "podman" ]; then
     ${CONTAINER_CLI_COMPOSE} ${COMPOSE_FILES}  down --volumes
   else

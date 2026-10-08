@@ -36,6 +36,19 @@ start: start-fabric start-app
 .PHONY: teardown
 teardown: teardown-app teardown-fabric
 
+# Teardown every platform's stack (fabricx, xdev, fabric3, drunix), regardless of
+# which one is currently up. Each platform's teardown-fabric rule is only visible
+# to `make` when PLATFORM selects its .mk file at parse time, so this re-invokes
+# make once per platform as a subprocess; `-` tolerates a platform that's already
+# down (ansible/compose erroring on nothing-to-tear-down) without aborting the rest.
+.PHONY: teardown-all
+teardown-all:
+	@for p in fabricx xdev fabric3 drunix; do \
+		echo "=== teardown PLATFORM=$$p ==="; \
+		$(MAKE) PLATFORM=$$p teardown || true; \
+	done
+	@docker network rm fabric_test >/dev/null 2>&1 || true
+
 # Test Fabric and the token network.
 .PHONY: test
 test:

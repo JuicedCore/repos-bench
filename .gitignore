@@ -39,3 +39,6 @@ fabric-x-samples/tokens/ansible/.venv/
 **/fabric-samples/test-network/channel-artifacts/
 
 .DS_Store
+
+# local Claude Code state
+**/.claude/

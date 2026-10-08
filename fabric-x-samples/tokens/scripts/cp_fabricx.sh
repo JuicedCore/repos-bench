@@ -31,12 +31,21 @@ for node in "${nodes[@]}"; do
 done
 
 # Endorser (see: https://github.com/hyperledger-labs/fabric-token-sdk/blob/main/docs/core-token.md?plain=1#L109).
-dir="${CONF_ROOT}/endorser1/keys/fabric" 
+dir="${CONF_ROOT}/endorser1/keys/fabric"
 mkdir -p "$dir"
 cp -r "${CRYPTO_DIR}/organizations/org1.example.com/users/endorser@org1.example.com/msp" "${dir}/endorser"
 cp -r "${CRYPTO_DIR}/organizations/org1.example.com/users/channel_admin@org1.example.com/msp" "${dir}/admin"
 
-dir="${CONF_ROOT}/endorser2/keys/fabric" 
+dir="${CONF_ROOT}/endorser2/keys/fabric"
 mkdir -p "$dir"
 cp -r "${CRYPTO_DIR}/organizations/org1.example.com/users/endorser@org1.example.com/msp" "${dir}/endorser"
 cp -r "${CRYPTO_DIR}/organizations/org1.example.com/users/channel_admin@org1.example.com/msp" "${dir}/admin"
+
+# Every FSC node resolves "endorser1" (its configured token/fsc_endorsement.endorsers
+# entry) via fabric.default.endpoint.resolvers against this local path, to the same
+# identity endorser1 actually signs endorsements with. Issuer/owner1/owner2 don't
+# otherwise have a copy of it, so give them one too.
+for node in issuer owner1 owner2; do
+    dir="${CONF_ROOT}/${node}/keys/fabric"
+    cp -r "${CRYPTO_DIR}/organizations/org1.example.com/users/endorser@org1.example.com/msp" "${dir}/endorser"
+done

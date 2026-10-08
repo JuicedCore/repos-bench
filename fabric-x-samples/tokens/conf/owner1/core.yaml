@@ -76,6 +76,12 @@ fabric:
     channels:
       - name: arma
         default: true
+    endpoint:
+      resolvers:
+        - name: endorser1
+          identity:
+            mspID: Org1MSP
+            path: ./keys/fabric/endorser
 
 token:
   enabled: true

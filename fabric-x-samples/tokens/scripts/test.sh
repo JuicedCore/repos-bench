@@ -136,7 +136,7 @@ function run_test() {
 ## Token SDK channel of the default TMS for the selected platform
 function tms_channel() {
     case "$PLATFORM" in
-        fabric3) echo "mychannel" ;;
+        fabric3|drunix) echo "mychannel" ;;
         *) echo "arma" ;;
     esac
 }
