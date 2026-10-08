@@ -1,0 +1,30 @@
+PartyID: 1
+
+General:
+  ListenAddress: 0.0.0.0
+  ListenPort: 7051
+  TLS:
+    Enabled: true
+    PrivateKey: /node-tls/server.key
+    Certificate: /node-tls/server.crt
+  Bootstrap:
+    Method: block
+    File: /bootstrap/genesis.block
+  LocalMSPDir: /node-msp
+  LocalMSPID: OrdererOrg1MSP
+
+  # Validate client signatures against /Channel/Writers.
+  # Disabled on devnet because we enforce mTLS and endorsement. Enable for defence in depth.
+  ClientSignatureVerificationRequired: false
+
+FileStore:
+  Location: /data
+
+Operations:
+  ListenAddress: 0.0.0.0
+  ListenPort: 9443
+  TLS:
+    Enabled: false
+
+Batcher:
+  ShardID: 1

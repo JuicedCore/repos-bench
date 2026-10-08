@@ -1,0 +1,42 @@
+# Copyright IBM Corp. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+---
+server:
+  endpoint: :4001
+  tls: &tlsConfig
+    mode: mtls
+    cert-path: /node-tls/server.crt
+    key-path: /node-tls/server.key
+    ca-cert-paths:
+      - /org-tls-ca.pem
+monitoring:
+  endpoint: :2114
+  tls: *tlsConfig
+
+orderer:
+  # BFT (also the default) makes the sidecar monitor the orderer for block withholding
+  fault-tolerance-level: BFT
+  latest-known-config-block-path: /bootstrap/genesis.block
+  tls:
+    mode: mtls
+    cert-path: /node-tls/server.crt
+    key-path: /node-tls/server.key
+  identity:
+    msp-id: Org1MSP
+    msp-dir: /msp
+
+committer:
+  endpoint: committer-coordinator:9001
+  tls: *tlsConfig
+
+ledger:
+  path: /ledger
+  # fsync every 100th bloc; blocks lost in a crash are re-fetched from the orderer on restart
+  sync-interval: 100
+
+notification:
+  # limit, and default, for how long a client waits for a transaction's notification (upstream default: 1m)
+  max-timeout: 10m
+
+logging:
+  logSpec: info:grpc=error

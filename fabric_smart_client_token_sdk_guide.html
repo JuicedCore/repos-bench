@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Guide: Fabric Smart Client, Views, Token SDK, and Fabric-X vs Vanilla Fabric</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --secondary: #0f172a;
+            --accent: #0ea5e9;
+            --accent-purple: #8b5cf6;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #334155;
+            --text-heading: #0f172a;
+            --text-muted: #64748b;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.65;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #2563eb 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        header h1 {
+            font-size: 2.75rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        header p {
+            font-size: 1.25rem;
+            max-width: 850px;
+            margin: 0 auto;
+            color: #cbd5e1;
+            font-weight: 300;
+        }
+
+        .badge-bar {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1.75rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f8fafc;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        nav.toc {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.75rem 2rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        nav.toc h2 {
+            font-size: 1.2rem;
+            color: var(--text-heading);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        nav.toc ol {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 0.75rem 1.5rem;
+            padding-left: 1.25rem;
+        }
+
+        nav.toc a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.15s ease;
+        }
+
+        nav.toc a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        section h2 {
+            font-size: 1.85rem;
+            color: var(--text-heading);
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        section h3 {
+            font-size: 1.35rem;
+            color: var(--secondary);
+            margin: 1.75rem 0 0.85rem 0;
+        }
+
+        section p {
+            margin-bottom: 1rem;
+            color: var(--text-main);
+            font-size: 1.05rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-highlight {
+            border-top: 4px solid var(--primary);
+        }
+
+        .card-purple {
+            border-top: 4px solid var(--accent-purple);
+        }
+
+        .card-emerald {
+            border-top: 4px solid var(--accent-emerald);
+        }
+
+        .card-amber {
+            border-top: 4px solid var(--accent-amber);
+        }
+
+        .card h4 {
+            font-size: 1.15rem;
+            color: var(--text-heading);
+            margin-bottom: 0.5rem;
+        }
+
+        .architecture-diagram {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            color: white;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            overflow-x: auto;
+        }
+
+        .architecture-diagram pre {
+            line-height: 1.4;
+            font-size: 0.95rem;
+            color: #38bdf8;
+        }
+
+        pre code {
+            display: block;
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.25rem 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.92rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            line-height: 1.55;
+            margin: 1.25rem 0;
+            border-left: 4px solid var(--primary);
+        }
+
+        code.inline {
+            background: #e2e8f0;
+            color: #0f172a;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.88em;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.75rem 0;
+            font-size: 0.98rem;
+        }
+
+        th, td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--text-heading);
+            font-weight: 700;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin: 1.75rem 0;
+        }
+
+        .step {
+            display: flex;
+            gap: 1.25rem;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            background: var(--primary);
+            color: white;
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            font-size: 1.15rem;
+            color: var(--text-heading);
+            margin-bottom: 0.35rem;
+        }
+
+        .alert {
+            padding: 1.25rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .alert-info {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            color: #1e40af;
+        }
+
+        .alert-warning {
+            background-color: #fefce8;
+            border-left: 4px solid #eab308;
+            color: #854d0e;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pill-blue { background: #dbeafe; color: #1e40af; }
+        .pill-green { background: #dcfce7; color: #166534; }
+        .pill-purple { background: #f3e8ff; color: #6b21a8; }
+        .pill-amber { background: #fef3c7; color: #92400e; }
+
+        footer {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+            background: white;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>The Distributed Ledger Evolution</h1>
+    <p>A Deep-Dive Technical Guide to Fabric Smart Client (FSC), the View Programming Model, the Token SDK (Panurus), and Fabric-X vs. Vanilla Fabric</p>
+    <div class="badge-bar">
+        <span class="badge">Hyperledger / LF Decentralized Trust</span>
+        <span class="badge">Fabric Smart Client (FSC)</span>
+        <span class="badge">Views & Responders</span>
+        <span class="badge">Zero-Knowledge Proofs (UTXO)</span>
+        <span class="badge">Fabric-X vs Fabric 3.x</span>
+    </div>
+</header>
+
+<div class="container">
+
+    <nav class="toc">
+        <h2>📑 Table of Contents</h2>
+        <ol>
+            <li><a href="#section-overview">1. Architectural Relationship & Big Picture</a></li>
+            <li><a href="#section-fsc">2. Fabric Smart Client (FSC): The Node Runtime</a></li>
+            <li><a href="#section-views">3. The View Programming Model: Initiators, Responders & Sessions</a></li>
+            <li><a href="#section-tokensdk">4. The Token SDK (Panurus): Private UTXOs & ZKPs</a></li>
+            <li><a href="#section-lifecycle">5. End-to-End Walkthrough of a Private Transfer</a></li>
+            <li><a href="#section-comparison">6. Vanilla Fabric vs. Fabric-X: Full Technical Comparison</a></li>
+            <li><a href="#section-code">7. Code Architecture: How It Looks in Practice</a></li>
+        </ol>
+    </nav>
+
+    <!-- SECTION 1 -->
+    <section id="section-overview">
+        <h2>1. Architectural Relationship & Big Picture</h2>
+        <p>
+            To understand how modern enterprise tokenized applications operate, you must decouple <strong>workflow orchestration</strong> from <strong>on-chain ledger settlement</strong>. Traditional blockchain systems force all business logic into on-chain smart contracts (chaincode). Modern architectures split this into a layered 3-tier hierarchy:
+        </p>
+
+        <div class="architecture-diagram">
+<pre>
++-----------------------------------------------------------------------------------+
+|                            CLIENT / USER APPLICATION                              |
+|                    REST API Endpoints (Swagger / HTTP Server)                     |
++-----------------------------------------------------------------------------------+
+                                          |
+                                    HTTP Requests
+                                          v
++-----------------------------------------------------------------------------------+
+|                        APPLICATION LAYER: TOKEN SDK (Panurus)                     |
+|  - Manages UTXO state (Unspent Transaction Outputs)                               |
+|  - Generates Zero-Knowledge Proofs (ZKAT DLOG commitments)                        |
+|  - Auditing, Token Management Services (TMS), Minting, Burning, HTLC              |
++-----------------------------------------------------------------------------------+
+                                          | Built on top of
+                                          v
++-----------------------------------------------------------------------------------+
+|                      MIDDLEWARE LAYER: FABRIC SMART CLIENT (FSC)                  |
+|  - Distributed Off-Chain Node Runtime & Peer-to-Peer Overlay Network              |
+|  - View Engine: Initiator Views, Responder Views, Bi-directional P2P Sessions     |
+|  - Local Identity Provider (IdP), Local Vault/Cache, Key Management               |
++-----------------------------------------------------------------------------------+
+                                          |
+                        +-----------------+-----------------+
+                        |                                   |
+         (Compiles with -tags !fabricx)       (Compiles with -tags fabricx)
+                        v                                   v
++---------------------------------------+   +---------------------------------------+
+|        VANILLA HYPERLEDGER FABRIC     |   |         FABRIC-X (ULTRA-SCALE)        |
+|  - Monolithic Peer Nodes              |   |  - Decomposed Microservices           |
+|  - In-peer Chaincode Execution        |   |  - Standalone gRPC Endorsers          |
+|  - Raft CFT Ordering Service          |   |  - Arma Sharded BFT Ordering Service  |
+|  - LevelDB / CouchDB State Storage    |   |  - Committer Stack + PostgreSQL DB    |
+|  - ~3,500 Transactions / Sec         |   |  - 200,000 – 400,000+ Trans / Sec     |
++---------------------------------------+   +---------------------------------------+
+</pre>
+        </div>
+
+        <div class="grid-3">
+            <div class="card card-highlight">
+                <span class="pill pill-blue">Layer 2 Engine</span>
+                <h4>Fabric Smart Client (FSC)</h4>
+                <p>The execution runtime running outside the blockchain. Orchestrates multi-party workflows, manages ephemeral identities, and facilitates off-chain peer-to-peer communication.</p>
+            </div>
+            <div class="card card-purple">
+                <span class="pill pill-purple">Workflow Model</span>
+                <h4>The View Framework</h4>
+                <p>FSC's programming abstraction. Replaces asynchronous messaging with synchronous-style Go coroutines that negotiate, exchange signatures, and assemble transactions.</p>
+            </div>
+            <div class="card card-emerald">
+                <span class="pill pill-green">Domain SDK</span>
+                <h4>Token SDK (Panurus)</h4>
+                <p>A domain-specific framework running inside FSC. Implements confidential, ZKP-backed UTXO token transactions where amounts and owners remain concealed on-chain.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section id="section-fsc">
+        <h2>2. Fabric Smart Client (FSC): The Node Runtime</h2>
+        <p>
+            <strong>Fabric Smart Client (FSC)</strong> (developed under Hyperledger Labs / LF Decentralized Trust) is an off-chain client node framework designed to overcome the limitations of classic client SDKs.
+        </p>
+        <p>
+            In standard blockchain clients, an application acts merely as a remote caller invoking chaincode. When multiple organizations need to negotiate, share confidential payloads, or jointly sign a transaction before submission, classic clients require external middleware, complex messaging queues, and custom coordination servers.
+        </p>
+
+        <h3>Core Capabilities of an FSC Node</h3>
+        <ul>
+            <li><strong>Peer-to-Peer Communication Overlay:</strong> FSC nodes connect to each other directly via WebSockets or gRPC using mutual TLS. Node A can send messages directly to Node B without writing uncommitted data to the ledger.</li>
+            <li><strong>Local State Management (Vault):</strong> Each FSC node maintains a local key-value store and transaction database to track its own unspent tokens, transaction drafts, and privacy parameters.</li>
+            <li><strong>Identity & Endpoint Resolution:</strong> Decouples human-readable names (e.g., <code class="inline">"alice"</code>, <code class="inline">"owner2"</code>) from cryptographic public keys and network addresses.</li>
+            <li><strong>Pluggable Settlement Drivers:</strong> An FSC node can drive transactions to Vanilla Fabric (via Fabric Gateway / peer APIs) or Fabric-X (via direct Orderer and Committer gRPC endpoints) with zero changes to high-level application logic.</li>
+        </ul>
+
+        <div class="alert alert-info">
+            <div>💡</div>
+            <div>
+                <strong>Key Distinction:</strong> An FSC Node is <em>not</em> a blockchain peer. It is an application-tier node that represents a participant (e.g., a Bank, an Issuer, a Merchant, or a User Wallet) operating on the periphery of the blockchain network.
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section id="section-views">
+        <h2>3. The View Programming Model: Initiators, Responders & Sessions</h2>
+        <p>
+            The <strong>View</strong> is FSC’s fundamental programming primitive. Instead of writing fragmented request/response event handlers, you write a cohesive, linear Go function that represents a distributed protocol.
+        </p>
+
+        <h3>The Anatomy of a View</h3>
+        <p>A View is any Go struct that implements the single <code class="inline">view.View</code> interface:</p>
+<pre><code>type View interface {
+    Call(context view.Context) (interface{}, error)
+}</code></pre>
+
+        <div class="grid-2">
+            <div class="card card-highlight">
+                <h4>Initiator View</h4>
+                <p>The entry point that kicks off a distributed interaction. For example, when Alice calls <code class="inline">POST /transfer</code>, her node executes <code class="inline">TransferView</code>. The initiator opens a session with the counterparty node and coordinates the flow.</p>
+                <pre><code>mgr, _ := viewregistry.GetManager(fscNode)
+res, err := mgr.InitiateView(ctx, &TransferView{...})</code></pre>
+            </div>
+            <div class="card card-purple">
+                <h4>Responder View</h4>
+                <p>The recipient's reactive logic. When Dan's node receives an incoming message originating from an Initiator View, FSC automatically routes it to the registered Responder View (such as <code class="inline">AcceptCashView</code>).</p>
+                <pre><code>reg := viewregistry.GetRegistry(fscNode)
+reg.RegisterResponder(&AcceptCashView{}, &TransferView{})</code></pre>
+            </div>
+        </div>
+
+        <h3>P2P Sessions & The Communication Pipeline</h3>
+        <p>
+            Inside a View, parties exchange data using <strong>Sessions</strong>. When Alice calls <code class="inline">session.Send()</code>, the message is encrypted and sent directly over the P2P connection to Dan. Dan's node unblocks at <code class="inline">session.Receive()</code>, performs local verification, and sends back an acknowledgment or cryptographic signature.
+        </p>
+
+        <div class="alert alert-warning">
+            <div>⚡</div>
+            <div>
+                <strong>Why this is revolutionary:</strong> Multi-round cryptographic exchanges (e.g., identity derivation &rarr; selective disclosure &rarr; zero-knowledge proof verification &rarr; co-signing) take place entirely <em>off-chain</em>. The blockchain only receives the final, valid, fully-endorsed transaction package.
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section id="section-tokensdk">
+        <h2>4. The Token SDK (Panurus): Private UTXOs & ZKPs</h2>
+        <p>
+            The <strong>Token SDK</strong> (formerly developed by IBM Research and Hyperledger Labs, now maintained under LF Decentralized Trust as Panurus) builds on top of FSC to provide a production-grade tokenization framework.
+        </p>
+
+        <h3>1. The UTXO Model vs. The Account Model</h3>
+        <p>
+            Most smart contract token standards (such as Ethereum's ERC-20) use an account-based balance table (<code class="inline">balances[address] = amount</code>). This causes two major issues in enterprise settings:
+        </p>
+        <ul>
+            <li><strong>Concurrency Bottlenecks:</strong> Multiple concurrent transfers involving the same address conflict on the read/write set (MVCC read conflict in Fabric).</li>
+            <li><strong>Privacy Exposure:</strong> Every account's current balance and transaction amount are visible to any node validating state.</li>
+        </ul>
+        <p>
+            The Token SDK instead employs the <strong>UTXO (Unspent Transaction Output)</strong> model. Value is stored in discrete cryptographic "coins". To transfer 100 TOK from a 1,000 TOK coin, the 1,000 TOK coin is consumed (spent), and two new coins are minted: 100 TOK for the recipient, and 900 TOK returned to the sender as "change".
+        </p>
+
+        <h3>2. Zero-Knowledge Proofs: ZKAT DLOG</h3>
+        <p>
+            The Token SDK supports the <strong>ZKAT DLOG (Zero-Knowledge Audit-Tokens Discrete Logarithm)</strong> driver:
+        </p>
+        <div class="grid-2">
+            <div class="card card-emerald">
+                <h4>Pedersen Commitments</h4>
+                <p>The token value \(v\) is hidden inside a cryptographic commitment:
+                $$\mathcal{C} = g^v \cdot h^r$$
+                where \(r\) is a blinding factor known only to the owner. The ledger records \(\mathcal{C}\), concealing the exact amount.</p>
+            </div>
+            <div class="card card-amber">
+                <h4>Zero-Knowledge Conservation of Value</h4>
+                <p>The sender generates a mathematical proof that:
+                $$\sum \text{Inputs} = \sum \text{Outputs}$$
+                Verifiers and endorsers can verify mathematically that no tokens were created out of thin air, without knowing what the inputs or outputs actually evaluate to.</p>
+            </div>
+        </div>
+        <p>
+            Furthermore, owner identities are masked using <strong>Idemix (Identity Mixer)</strong> or pseudonymous one-time keys, making it impossible for network participants or eavesdroppers to link transactions to physical corporate entities.
+        </p>
+    </section>
+
+    <!-- SECTION 5 -->
+    <section id="section-lifecycle">
+        <h2>5. End-to-End Walkthrough of a Private Transfer</h2>
+        <p>
+            Here is the step-by-step lifecycle of an off-chain private token transfer between <strong>Alice (Owner 1)</strong> and <strong>Dan (Owner 2)</strong>:
+        </p>
+
+        <div class="step-container">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h4>Triggering the Transfer View</h4>
+                    <p>Client sends an HTTP request: <code class="inline">POST /owner/accounts/alice/transfer</code> to Owner 1. The HTTP handler instantiates and triggers <code class="inline">TransferView</code> inside the FSC runtime.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h4>Off-Chain Pseudonym Exchange</h4>
+                    <p>Alice’s view initiates an off-chain session with Dan's node. Alice calls <code class="inline">RequestRecipientIdentity(dan)</code>. Dan's node fires <code class="inline">AcceptCashView</code>, generates a fresh, pseudonymous public key, and returns it over WebSockets. No observer can correlate this key to Dan.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h4>Local UTXO Selection & ZKP Construction</h4>
+                    <p>Alice's Token SDK searches her local database for sufficient unspent tokens. It constructs a transaction envelope, computes the output commitments (recipient amount and change), and generates the zero-knowledge proofs.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                    <h4>Recipient Validation & Acceptance</h4>
+                    <p>Alice transmits the drafted transaction to Dan off-chain. Dan's <code class="inline">AcceptCashView</code> inspects the outputs, confirms he is indeed receiving the promised tokens, and signs an acceptance token witness back to Alice.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-content">
+                    <h4>ZKP Endorsement Gathering</h4>
+                    <p>Alice’s view sends the transaction to the <strong>Endorser Service</strong> via <code class="inline">ttx.NewCollectEndorsementsView</code>. The endorser verifies that the ZKP proofs are mathematically sound and signs the endorsement proposal.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-num">6</div>
+                <div class="step-content">
+                    <h4>Ordering & Ledger Finality</h4>
+                    <p>Alice submits the transaction envelope to the Ordering Service (Raft in Fabric 3; Arma BFT in Fabric-X). Once committed to the block, Alice and Dan receive finality notification events. Both nodes transition the transaction state to <code class="inline">Confirmed</code> and update their local wallet balances.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 6 -->
+    <section id="section-comparison">
+        <h2>6. Vanilla Fabric vs. Fabric-X: Full Technical Comparison</h2>
+        <p>
+            While the high-level application code (FSC Views and Token SDK) remains virtually identical, the underlying architecture between <strong>Vanilla Fabric (2.x / 3.x)</strong> and <strong>Fabric-X</strong> represents a profound paradigm shift.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Architectural Dimension</th>
+                    <th>Vanilla Hyperledger Fabric (2.x / 3.x)</th>
+                    <th>Hyperledger Fabric-X</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Peer Architecture</strong></td>
+                    <td><strong>Monolithic Peer Node:</strong> A single process handles simulation, endorsement, gossiping, ledger storage, validation, and committing.</td>
+                    <td><strong>Disaggregated Microservices:</strong> Endorsers, Validators, Committers, and Query Services run as independently scalable services.</td>
+                </tr>
+                <tr>
+                    <td><strong>Smart Contract (Chaincode) Execution</strong></td>
+                    <td>Runs as Docker containers managed by peer nodes using the classic Chaincode Shim / External Builder interface.</td>
+                    <td><strong>Standalone Endorser Services:</strong> Endorsers run outside peer nodes as standalone gRPC services implementing the <code class="inline">Executor</code> interface.</td>
+                </tr>
+                <tr>
+                    <td><strong>Consensus & Ordering Service</strong></td>
+                    <td><strong>Raft (CFT):</strong> Crash Fault Tolerant consensus. Orders full transaction payloads. Subject to bandwidth bottlenecks.</td>
+                    <td><strong>Arma (BFT):</strong> Sharded Byzantine Fault Tolerant consensus. Orders compact transaction digests across Router, Batcher, Consenter, and Assembler nodes.</td>
+                </tr>
+                <tr>
+                    <td><strong>Throughput & Scalability</strong></td>
+                    <td>Bottlenecks at ~3,000 – 4,000 TPS due to serial validation and Raft block replication.</td>
+                    <td><strong>200,000 – 400,000+ TPS:</strong> Horizontal scaling of individual microservices designed for national-scale payment systems.</td>
+                </tr>
+                <tr>
+                    <td><strong>State Database & Storage</strong></td>
+                    <td>Embedded LevelDB or CouchDB inside peer containers. Heavy read/write contention during peak traffic.</td>
+                    <td><strong>Enterprise PostgreSQL State DB:</strong> Offloaded to external relational databases with dedicated read-only <strong>Query Services</strong>.</td>
+                </tr>
+                <tr>
+                    <td><strong>Token SDK Driver</strong></td>
+                    <td>Uses <code class="inline">fabric.NewGenericDriver</code>. Requires traditional chaincode deployment cycle (<code class="inline">package</code>, <code class="inline">install</code>, <code class="inline">approve</code>, <code class="inline">commit</code>).</td>
+                    <td>Uses <code class="inline">fabricx.NewDriver</code> + <code class="inline">tms.DeployerService</code>. Token parameters are committed directly to the namespace via <code class="inline">/endorser/init</code>.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>How the Code Switches Between Vanilla Fabric and Fabric-X</h3>
+        <p>
+            In the repository, the switch between platforms is achieved seamlessly at compile time using Go build tags:
+        </p>
+
+        <div class="grid-2">
+            <div>
+                <h4>Vanilla Fabric (<code class="inline">common/sdk_3.go</code>)</h4>
+                <pre><code>//go:build !fabricx
+
+package common
+
+import (
+    "github.com/LFDT-Panurus/panurus/token/services/network/fabric"
+    // ...
+)
+
+func (p *SDK) Install() error {
+    // Injects classic Fabric network driver
+    p.Container().Provide(fabric.NewGenericDriver, 
+        dig.Group("network-drivers"))
+    // ...
+}</code></pre>
+            </div>
+            <div>
+                <h4>Fabric-X (<code class="inline">common/sdk_x.go</code>)</h4>
+                <pre><code>//go:build fabricx
+
+package common
+
+import (
+    "github.com/LFDT-Panurus/panurus/token/services/network/fabricx"
+    "github.com/LFDT-Panurus/panurus/token/services/network/fabricx/tms"
+    // ...
+)
+
+func (p *SDK) Install() error {
+    // Injects Fabric-X driver and direct submitters
+    p.Container().Provide(fabricx.NewDriver, 
+        dig.Group("network-drivers"))
+    p.Container().Provide(tms.NewSubmitterFromFNS, 
+        dig.As(new(tms.Submitter)))
+    // ...
+}</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 7 -->
+    <section id="section-code">
+        <h2>7. Summary: Why This Architecture Matters</h2>
+        <p>
+            The combination of <strong>Fabric Smart Client</strong>, the <strong>View Framework</strong>, and the <strong>Token SDK</strong> over <strong>Fabric-X</strong> represents the state of the art in enterprise blockchain engineering:
+        </p>
+        <div class="grid-3">
+            <div class="card card-highlight">
+                <h4>Complete Privacy</h4>
+                <p>Balances, identities, and transaction values never touch the shared ledger in plaintext. Regulatory compliance is satisfied without compromising confidentiality.</p>
+            </div>
+            <div class="card card-purple">
+                <h4>Modular Clean Architecture</h4>
+                <p>Developers write standard, imperative Go workflows (Views) without wrestling with low-level gRPC streams, cryptographic curves, or blockchain protocols.</p>
+            </div>
+            <div class="card card-emerald">
+                <h4>Future-Proof Portability</h4>
+                <p>The identical business code runs on local test containers, classic Fabric 3.x clusters, or enterprise-scale Fabric-X networks simply by swapping build flags.</p>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p>Generated for Fabric-X &amp; Token SDK Architectural Research &bull; Hyperledger Fabric-X &bull; LF Decentralized Trust &bull; 2026</p>
+</footer>
+
+</body>
+</html>

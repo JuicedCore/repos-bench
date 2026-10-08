@@ -1,0 +1,27 @@
+# Copyright IBM Corp. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+---
+server:
+  endpoint: :6001
+  tls:
+    mode: mtls
+    cert-path: /node-tls/server.crt
+    key-path: /node-tls/server.key
+    ca-cert-paths:
+      - /org-tls-ca.pem
+monitoring:
+  endpoint: :2116
+  tls:
+    mode: none
+
+database:
+  endpoints:
+    - committer-db:5432
+  username: "sc_user"
+  password: "sc_secret_pwd"
+  database: "sc_db"
+  tls:
+    mode: none
+
+logging:
+  logSpec: info:grpc=error
