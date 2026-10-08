@@ -56,6 +56,7 @@ clean-fabric:
 # Start the targeted hosts (e.g. make fabric-fabric start).
 .PHONY: start-fabric
 start-fabric:
+	@[ -f "$(CONF_ROOT)/namespace/zkatdlognoghv1_pp.json" ] || { echo "Error: $(CONF_ROOT)/namespace/zkatdlognoghv1_pp.json not found. Run 'make setup' first."; exit 1; }
 	@if $(CONTAINER_CLI) network inspect fabric_test >/dev/null 2>&1; then \
 		echo "Error: existing fabric_test network detected. Run 'make teardown' first."; \
 		exit 1; \
@@ -64,9 +65,10 @@ start-fabric:
 	INIT_REQUIRED="--init-required" "$(DRUNIX_NETWORK)/test-network/network.sh" deployCCAAS -ccn token_namespace -ccp "$(abspath $$CONF_ROOT)/namespace" -cci "init"
 	FABRIC_SAMPLES="$(DRUNIX_NETWORK)" CONF_ROOT="$(abspath $$CONF_ROOT)" ./scripts/cp_fabric3.sh
 
-# Stop the targeted hosts (e.g. make fabric-x stop).
+# Stopping this network tears it down (new channel and ledger on the next start), so the
+# app containers go too: stopped ones would still reference the removed fabric_test network.
 .PHONY: stop-fabric
-stop-fabric: teardown-fabric
+stop-fabric: teardown-app teardown-fabric
 
 # Teardown the targeted hosts (e.g. make fabric-x teardown).
 .PHONY: teardown-fabric

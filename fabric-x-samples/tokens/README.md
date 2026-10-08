@@ -39,6 +39,7 @@ The **Token SDK Sample** demonstrates how to:
   - [Example: Redeem tokens](#example-redeem-tokens)
   - [Example: HTLC lock, claim and reclaim](#example-htlc-lock-claim-and-reclaim)
   - [Automated end-to-end tests](#automated-end-to-end-tests)
+  - [Stopping and restarting](#stopping-and-restarting)
   - [Teardown and cleanup](#teardown-and-cleanup)
   - [Development](#development)
   - [Debug mode](#debug-mode)
@@ -203,7 +204,8 @@ curl -X POST http://localhost:9300/endorser/init
 Right after `make start` the Fabric-X network can still be converging, so the first `init` call may return
 HTTP 500; retry it until it returns `{"message":"ok"}`. `init` deploys the public parameters from
 `conf/namespace/zkatdlognoghv1_pp.json` (the endorser's `publicParameters.path`) to the ledger. Issuing
-before a successful `init` fails with `issuer wallet not found`.
+before a successful `init` fails with `issuer wallet not found`. Calling `init` again is safe: if the
+ledger already holds these parameters it returns `ok` without submitting anything.
 
 ## Option 2: Fabric-X test container
 
@@ -300,7 +302,8 @@ make start
 ```
 
 The backing database (YugabyteDB) can take a couple of minutes to become ready on first boot; `make start`
-waits for it automatically before starting the peers.
+waits for it automatically before starting the peers. `start`, `stop` and `/endorser/init` behave as on
+Fabric v3 (see [Stopping and restarting](#stopping-and-restarting)).
 
 ## Interacting with the Application
 
@@ -427,6 +430,19 @@ PLATFORM=drunix HTLC_TEST=1 make test    # drunix (channel mychannel, no init ne
 
 When switching between platforms, run `make teardown-all` first so no other platform's containers are
 still attached to the shared `fabric_test` network.
+
+## Stopping and restarting
+
+- `make start` waits until every application node is ready (and, on Fabric v3, until the token service
+  can load its public parameters), so you can send requests as soon as it returns.
+- `make restart-app` rebuilds and restarts only the application; the ledger and balances are kept.
+- `make stop` on **Fabric-X** stops all containers and keeps their data; `make start` resumes the same
+  ledger and balances.
+- `make stop` on **Fabric v3** tears the network down (the test network has no pause), so the next
+  `make start` creates a fresh channel and balances start from zero.
+- `make start` on an already running Fabric v3 network is refused with
+  `existing fabric_test network detected`; the running network is not touched. On Fabric-X it is a no-op.
+- `make start` before `make setup` fails with `... zkatdlognoghv1_pp.json not found. Run 'make setup' first.`
 
 ## Teardown and cleanup
 

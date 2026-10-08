@@ -56,6 +56,7 @@ clean-fabric:
 # Start fabric-x on the targeted hosts.
 .PHONY: start-fabric
 start-fabric:
+	@[ -f "$(CONF_ROOT)/namespace/zkatdlognoghv1_pp.json" ] || { echo "Error: $(CONF_ROOT)/namespace/zkatdlognoghv1_pp.json not found. Run 'make setup' first."; exit 1; }
 	@$(CONTAINER_CLI) network inspect fabric_test >/dev/null 2>&1 || $(CONTAINER_CLI) network create fabric_test
 	ansible-playbook "$(PLAYBOOK_PATH)/60-start.yaml" --extra-vars '{"target_hosts": "$(TARGET_HOSTS)"}'
 
