@@ -21,6 +21,11 @@ binaries/Docker build output, ansible-galaxy collections, generated crypto and c
 artifacts) are gitignored, not committed — `make install-prerequisites` and `make setup`
 regenerate all of it fresh per the instructions in `fabric-x-samples/tokens/README.md`.
 
+- **`x-samples-fixes/`** — notes from getting the sample working everywhere:
+  [`NETWORK-ARCHITECTURE.md`](x-samples-fixes/NETWORK-ARCHITECTURE.md) explains every container on
+  each network and what each command and REST call does;
+  [`ALL-PLATFORMS-FIXES.md`](x-samples-fixes/ALL-PLATFORMS-FIXES.md) logs every error and its fix.
+
 ## Quick start
 
 ```shell

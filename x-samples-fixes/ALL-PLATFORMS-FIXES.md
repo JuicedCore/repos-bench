@@ -19,6 +19,8 @@ histories, redeem 50, then HTLC: lock 20 for dan and claim with the pre-image, l
 hash, let it expire and reclaim, and check that dan's late claim is rejected. Final balances: alice 830,
 dan 120 on every platform.
 
+See also [NETWORK-ARCHITECTURE.md](NETWORK-ARCHITECTURE.md) for what every container does.
+
 Run `make teardown-all` before switching platforms.
 
 ---
@@ -172,6 +174,56 @@ drunix-side (drunix repo, `drunix/` and `drunix/drunix-network/`):
 
 ---
 
+## Repeat-safety (found by running everything many times)
+
+A repeat/concurrency test (init 3× + 3× in parallel, 3 rounds of every operation, duplicate claim,
+5 parallel issues and transfers, exact balance checks) plus lifecycle checks (`start` while running,
+`restart-app`, `stop`→`start`, double `teardown`/`clean`/`setup`, official suite) now pass with 0 failures
+on all three platforms. Fixes needed on the way:
+
+### 20. Fabric-X: calling `/endorser/init` twice breaks every later transaction
+- **Symptom:** after a second `init`, every issue/transfer/redeem/lock fails with
+  `transaction [...] is not valid [Deleted]: invalid transaction`. Committer `tx_status` shows status 3 =
+  `ABORTED_MVCC_CONFLICT`.
+- **Cause:** the second deploy rewrote identical public parameters, bumping the setup key's version. The
+  nodes skip reloading parameters whose hash didn't change, so their token transactions kept declaring a
+  read dependency on the old version. Two quick calls could also both deploy before the first committed.
+  `test.sh` retries init, so a single slow first call is enough to hit this.
+- **Fix (`endorser/service/init_fabricx.go`):** skip when the ledger already holds the same bytes, serialise
+  calls with a mutex, and wait until the deployment is committed before returning. Verified: 5 parallel
+  first-time inits produce exactly one deploy transaction, and the setup key stays at version 0.
+
+### 21. `/endorser/init` returned HTTP 500 on Fabric v3 / drunix
+- **Cause:** the endpoint always used the Fabric-X deployer, which isn't registered on classic Fabric.
+- **Fix:** split by build tag: `init_fabricx.go` (deploy) and `init_fabric.go` (no-op `ok`, since
+  the parameters come with the chaincode).
+
+### 22. Fabric v3 / drunix: `make stop` then `make start` fails
+- **Symptom:** `failed to set up container networking: network <id> not found`.
+- **Cause:** `stop-fabric` is a full teardown (it removes `fabric_test`), but `stop-app` only stopped the app
+  containers, which still pointed at the removed network.
+- **Fix (`fabric3.mk`, `drunix.mk`):** `stop-fabric: teardown-app teardown-fabric`.
+
+### 23. First request right after a fresh Fabric v3 / drunix start fails
+- **Symptom:** `issuer wallet not found` (log: `cannot retrieve public params for [default,mychannel,token_namespace]`)
+  for about 2 s after `make start` returns; it works afterwards.
+- **Cause:** containers report `/readyz` before the namespace chaincode answers public-parameter queries.
+- **Fix (`app.mk`):** `wait-app` runs at the end of `start-app`/`restart-app`. It waits for every node's
+  `/readyz` and, outside Fabric-X, for `GET /owner/accounts/alice` on owner1 to succeed.
+
+### 24. `make start` without `make setup` failed deep inside the chaincode build
+- **Symptom:** `"/zkatdlognoghv1_pp.json": not found` from the CCaaS Docker build.
+- **Fix:** `start-fabric` on all platforms checks for `<conf>/namespace/zkatdlognoghv1_pp.json` first and
+  says `Run 'make setup' first`.
+
+### Behaviour that is by design
+- Fabric v3 / drunix `make start` on a running network is refused (`existing fabric_test network detected`)
+  without touching it. Fabric-X `make start` is a no-op when running.
+- Fabric v3 / drunix `make stop` resets the ledger (the test network has no pause). Fabric-X keeps it.
+- A duplicate HTLC `claim` is rejected with HTTP 500 `expected exactly one htlc script to match, got [0]`.
+
+---
+
 ## Commits (fabric-x-samples)
 
 Branch `fix/all-platforms` (fork). Upstream-safe commits come first; drunix-only commits after.
@@ -188,8 +240,14 @@ Branch `fix/all-platforms` (fork). Upstream-safe commits come first; drunix-only
 | fix: exclude out/ from app image build context | upstream-safe |
 | fix: skip Fabric-X teardown when not deployed; clean root-owned out/ | upstream-safe |
 | docs: init retry, redeem, make test, Fabric-X troubleshooting | upstream-safe |
+| fix: endorser init idempotent, no-op on classic Fabric | upstream-safe |
+| fix: wait until the application is usable at the end of start | upstream-safe |
+| fix: stop/start repeatable on Fabric v3, fail fast without setup | upstream-safe |
+| docs: repeatable init and stop/start behaviour | upstream-safe |
 | fix: mychannel for drunix HTLC tests | drunix |
 | docs: drunix end-to-end tests and HTLC channel | drunix |
+| fix: stop/start repeatable on drunix, fail fast without setup | drunix |
+| docs: drunix stop/start behaviour | drunix |
 
 Branch `upstream/all-platforms-fixes` is `origin/main` (hyperledger) plus only the upstream-safe commits,
 with no drunix references — the one to open a PR against hyperledger/fabric-x-samples.
